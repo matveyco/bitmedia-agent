@@ -1,0 +1,17 @@
+# HARD SAFETY LIMITS — every mutating operation is validated against these.
+# Changing this file is a HUMAN decision; the agent must never raise limits on its own.
+#
+# Spend model: Bitmedia requires group daily limits >= $50 (static bid strategy),
+# which usually exceeds a sensible test budget. The REAL spend control is the
+# campaign balance: the agent drip-funds at most daily_refill_cap per day, and
+# money that isn't in the campaign cannot be spent. Group limits are a secondary brake.
+
+daily_spend_cap: 30        # USD/day — enforced via refill cap + velocity watchdog
+daily_refill_cap: 30       # max total campaign refills per calendar day (UTC), USD
+max_single_refill: 30      # max one-shot refill, USD
+group_daily_limit_min: 50  # platform minimum for static strategy
+group_daily_limit_max: 60  # guard refuses limits above this
+max_cpc_bid: 0.50          # bid ceiling for native_cpc groups, USD
+max_cpm_bid: 1.00          # bid ceiling for native_cpm groups, USD
+reserve_balance: 400       # account balance must stay >= this (unlock = human decision)
+velocity_pause_factor: 1.3 # auto-pause if today's spend > factor * daily_spend_cap

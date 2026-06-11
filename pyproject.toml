@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bitmedia-agent"
+version = "0.2.0"
+description = "AI-agent media buyer for the Bitmedia.io ad network: guard-railed CLI, audit ledger, GA4 cross-checking, portable agent skill"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "matveyco" }]
+requires-python = ">=3.12"
+dependencies = [
+    "typer>=0.12",
+    "httpx>=0.27",
+    "pyyaml>=6",
+    "python-dotenv>=1",
+    "google-analytics-data>=0.18",
+    "google-auth-oauthlib>=1.2",
+]
+
+[project.urls]
+Repository = "https://github.com/matveyco/bitmedia-agent"
+
+[project.scripts]
+bitmedia-agent = "bitmedia_agent.cli:app"
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "respx>=0.21", "ruff>=0.6"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+bitmedia_agent = ["templates/*.yaml"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

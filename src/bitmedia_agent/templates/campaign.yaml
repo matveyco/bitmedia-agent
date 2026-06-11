@@ -1,0 +1,70 @@
+# Declarative campaign plan: `bitmedia-agent launch` builds exactly this, idempotently.
+campaign:
+  name: my-campaign
+  currency: USD
+  initial_funding: 30          # first balance drip (the campaign balance IS its budget)
+
+landing:
+  base_url: https://example.com/landing
+  static_params:
+    utm_source: bitmedia
+    utm_medium: cpc
+    utm_campaign: my-campaign
+  # {size} is replaced per creative; {source} stays literal — Bitmedia fills the
+  # publisher site id, giving per-site lead attribution in your analytics
+  utm_content: "{size}-{source}"
+
+# optional public KPI counter polled into the daily report
+# kpi:
+#   waitlist_count_url: https://example.com/api/waitlist/count
+
+creative_title_pattern: "{campaign}-{size}-{group}"
+
+defaults:
+  type: native_cpc             # CPC recommended for lead-gen (pay per click)
+  bid_strategy: static         # the only mode viable under ~$300/day
+  countries: [US]              # ISO-2 codes; check `bitmedia-agent recommended-bid` first
+  vpn_traffic: excluded        # VPN/datacenter filter ON (fraud defense)
+  ad_rerun: 72                 # hours before re-showing to the same user
+  frequency:                   # may be unavailable for CPC accounts — applied best-effort
+    enabled: true
+    value: 3
+    time: 24
+  display_time: {from: 0, to: 24}
+  pacing_split: false          # even pacing requires daily limit > $50
+
+groups:
+  - name: mobile
+    bid: 0.30                  # start inside the recommended band for your geo
+    daily_limit: 50            # platform minimum; real cap = balance drip
+    mobile_os:  {android: true, ios: true, winmobile: false, others: true}
+    desktop_os: {windows: false, linux: false, macos: false, others: false}
+    creatives: [300x250, 336x280, 320x100, 300x100, 250x250]
+
+  - name: desktop
+    bid: 0.30
+    daily_limit: 50
+    mobile_os:  {android: false, ios: false, winmobile: false, others: false}
+    desktop_os: {windows: true, linux: true, macos: true, others: true}
+    creatives: [728x90, 160x600, 468x60, 300x250, 336x280]
+
+banners_dir: banners
+banner_pattern: "ad-banner-{size}.png"
+
+# Additional creative sets (e.g. another language). Reference them in a group's
+# creatives list as "<set>:<size>" — the set key becomes part of the creative
+# title and utm_content (e.g. "ar:300x250" -> "ar-300x250"), so each set's
+# performance is separately attributable.
+# banner_sets:
+#   ar:
+#     dir: banners-ar
+#     pattern: "ad-banner-{size}.png"
+
+# Text ads — created in EVERY group; {key} takes the place of {size} in utm_content.
+# Platform limits (probed live): title <= 35 chars, each description <= 35 chars.
+text_display_url: example.com
+text_ads: []
+#  - key: txt-value-prop
+#    title: "Short headline up to 35 chars"
+#    description1: "First line, max 35 chars."
+#    description2: "Second line, max 35 chars."
