@@ -1,5 +1,21 @@
 """Light config validation — fail fast with a clear message, no schema library."""
 
+MAX_TITLE_LEN = 35  # platform limit for creative titles (image and text alike)
+
+DEFAULT_TITLE_PATTERN = "{campaign}-{size}-{group}"
+
+
+def creative_token(entry: str) -> str:
+    """'300x250' -> '300x250'; 'ar:300x250' -> 'ar-300x250'."""
+    return entry.replace(":", "-", 1)
+
+
+def creative_title(cfg: dict, token: str, group: str) -> str:
+    pattern = cfg.get("creative_title_pattern", DEFAULT_TITLE_PATTERN)
+    return (pattern.replace("{campaign}", cfg["campaign"]["name"])
+                   .replace("{size}", token).replace("{group}", group))
+
+
 LIMIT_KEYS = [
     "daily_spend_cap", "daily_refill_cap", "max_single_refill",
     "group_daily_limit_min", "group_daily_limit_max",
@@ -49,8 +65,14 @@ def validate_campaign(cfg: dict) -> None:
                 raise ValueError(
                     f"group {g['name']}: creative '{entry}' references undefined "
                     f"banner set '{entry.split(':', 1)[0]}'")
+            title = creative_title(cfg, creative_token(entry), g["name"])
+            if len(title) > MAX_TITLE_LEN:
+                raise ValueError(
+                    f"creative title '{title}' is {len(title)} chars — platform max is "
+                    f"{MAX_TITLE_LEN}. Use shorter banner-set keys or group names.")
     for ad in cfg.get("text_ads") or []:
         for field in ("title", "description1", "description2"):
-            if len(ad.get(field, "")) > 35:
+            if len(ad.get(field, "")) > MAX_TITLE_LEN:
                 raise ValueError(
-                    f"text ad {ad.get('key')}: {field} exceeds 35 chars (platform limit)")
+                    f"text ad {ad.get('key')}: {field} exceeds {MAX_TITLE_LEN} chars "
+                    "(platform limit)")

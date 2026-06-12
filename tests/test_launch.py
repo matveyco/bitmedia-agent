@@ -136,3 +136,12 @@ def test_launch_is_idempotent(ws):
     assert not client2.called("POST", "/api/creatives/create-image")
     # funding not repeated either
     assert not client2.called("POST", "/api/campaigns/usd-refill-campaign")
+
+
+def test_validator_rejects_overlong_creative_title():
+    cfg = yaml.safe_load(yaml.safe_dump(CFG))
+    cfg["banner_sets"] = {"verylongkey": {"dir": "banners-x"}}
+    cfg["groups"][0]["creatives"] = ["verylongkey:300x250"]
+    cfg["groups"][0]["name"] = "a-very-long-group-name"
+    with pytest.raises(ValueError, match="platform max"):
+        validate_campaign(cfg)

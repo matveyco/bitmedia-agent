@@ -7,10 +7,8 @@ import yaml
 from . import ledger, workspace
 from .bitmedia import groups as g
 from .bitmedia.client import BitmediaError, Client
-from .configcheck import validate_campaign
+from .configcheck import creative_title, creative_token, validate_campaign
 from .guard import Guard
-
-DEFAULT_TITLE_PATTERN = "{campaign}-{size}-{group}"
 
 
 def _find(action: str, match: dict) -> str | None:
@@ -31,12 +29,6 @@ def click_url(cfg: dict, size: str) -> str:
     return land["base_url"] + "?" + urlencode(params).replace("%7Bsource%7D", "{source}")
 
 
-def creative_title(cfg: dict, size: str, group: str) -> str:
-    pattern = cfg.get("creative_title_pattern", DEFAULT_TITLE_PATTERN)
-    return (pattern.replace("{campaign}", cfg["campaign"]["name"])
-                   .replace("{size}", size).replace("{group}", group))
-
-
 def banner_source(cfg: dict, entry: str) -> tuple[str, "object"]:
     """Resolve a group creatives entry to (token, image path).
 
@@ -50,12 +42,11 @@ def banner_source(cfg: dict, entry: str) -> tuple[str, "object"]:
         spec = (cfg.get("banner_sets") or {})[set_key]
         directory = spec["dir"]
         pattern = spec.get("pattern", cfg.get("banner_pattern", "ad-banner-{size}.png"))
-        token = f"{set_key}-{size}"
     else:
-        size, token = entry, entry
+        size = entry
         directory, pattern = cfg["banners_dir"], cfg["banner_pattern"]
     path = workspace.root() / directory / pattern.replace("{size}", size)
-    return token, path
+    return creative_token(entry), path
 
 
 def launch(fund: bool = True, activate: bool = True, client: Client | None = None) -> dict:

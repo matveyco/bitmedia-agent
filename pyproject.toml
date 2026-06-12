@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bitmedia-agent"
-version = "0.2.0"
+version = "0.2.1"
 description = "AI-agent media buyer for the Bitmedia.io ad network: guard-railed CLI, audit ledger, GA4 cross-checking, portable agent skill"
 readme = "README.md"
 license = { text = "MIT" }
